@@ -36,36 +36,44 @@ class MouseLook:
         
         render.setMousePosition( * self.screen_center )
 
+class Key:
+    
+    def active( self, key_code ):
+        
+        if logic.keyboard.events[ key_code ] == logic.KX_INPUT_ACTIVE:
+            return True
+        return False
+    
 
 class KeyMotion:
     
     def __init__( self, cont ):
         
         self.cont = cont
+        
         self.sen_key = self.cont.sensors[ "Keyboard" ]
+        self.sen_col = self.cont.sensors[ "Collision" ]
+        
         self.act_rotz = self.cont.actuators[ "RotZ" ]
-        self.speed = 0.1
-        self.active_key = logic.KX_INPUT_ACTIVE
+        self.keyActive = Key()
+        
+        self.walkSpeed = 0.1
+        self.jumpHeight = 1
         
         self.cont.activate( self.act_rotz )
     
     
-    def keyDown( self, key_code ):
-        
-        if logic.keyboard.events[ key_code ] == self.active_key:
-            return True
-        return False
-    
-    
     def main( self ):
         
-        up_down = self.keyDown( events.SKEY ) - self.keyDown( events.WKEY )
-        right_left = self.keyDown( events.DKEY ) - self.keyDown( events.AKEY )
-
-        delta = Vector( ( right_left, up_down ) )
-        delta *= self.speed
-
-        self.act_rotz.dLoc = [ delta.y, delta.x, 0 ]
+        if 0 < len( self.sen_col.hitObjectList ):
+            up_down = self.keyActive.active( events.SKEY ) - self.keyActive.active( events.WKEY )
+            right_left = self.keyActive.active( events.DKEY ) - self.keyActive.active( events.AKEY )
+            jump = self.keyActive.active( events.SPACEKEY ) * self.jumpHeight
+        
+        delta = Vector( ( right_left, up_down, jump ) )
+        delta *= self.walkSpeed
+        
+        self.act_rotz.dLoc = [ delta.y, delta.x, delta.z ]
 
      
 class Avatar:
