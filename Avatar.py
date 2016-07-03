@@ -35,16 +35,57 @@ class MouseLook:
         self.act_rotz.dRot = [ 0, 0, vec_offset.x ]
         
         render.setMousePosition( * self.screen_center )
-        
 
-init = False
-mouseLook = MouseLook( logic.getCurrentController() )
+
+class KeyMotion:
+    
+    def __init__( self, cont ):
+        
+        self.cont = cont
+        self.sen_key = self.cont.sensors[ "Keyboard" ]
+        self.act_rotz = self.cont.actuators[ "RotZ" ]
+        self.speed = 0.1
+        self.active_key = logic.KX_INPUT_ACTIVE
+        
+        self.cont.activate( self.act_rotz )
+    
+    
+    def keyDown( self, key_code ):
+        
+        if logic.keyboard.events[ key_code ] == self.active_key:
+            return True
+        return False
+    
+    
+    def main( self ):
+        
+        up_down = self.keyDown( events.SKEY ) - self.keyDown( events.WKEY )
+        right_left = self.keyDown( events.DKEY ) - self.keyDown( events.AKEY )
+
+        delta = Vector( ( right_left, up_down ) )
+        delta *= self.speed
+
+        self.act_rotz.dLoc = [ delta.y, delta.x, 0 ]
+
+     
+class Avatar:
+    
+    def __init__( self, cont ):
+        
+        self.init = False
+        self.mouseLook = MouseLook( cont )
+        self.keyMotion = KeyMotion( cont )
+    
+    def main( self ):
+        
+        if self.init:
+            self.mouseLook.main()
+            self.keyMotion.main()
+        else:
+            self.init = True
+
+
+avatar = Avatar( logic.getCurrentController() )
 
 def main():
-    
-    global init
-    
-    if init:
-        mouseLook.main()
-    else:
-        init = True
+    avatar.main()
