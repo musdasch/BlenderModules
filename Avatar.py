@@ -65,6 +65,10 @@ class KeyMotion:
     
     def main( self ):
         
+        up_down = 0
+        right_left = 0
+        jump = 0
+        
         if 0 < len( self.sen_col.hitObjectList ):
             up_down = self.keyActive.active( events.SKEY ) - self.keyActive.active( events.WKEY )
             right_left = self.keyActive.active( events.DKEY ) - self.keyActive.active( events.AKEY )
