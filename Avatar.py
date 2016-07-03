@@ -51,9 +51,6 @@ class KeyMotion:
         
         self.cont = cont
         
-        self.sen_key = self.cont.sensors[ "Keyboard" ]
-        self.sen_col = self.cont.sensors[ "Collision" ]
-        
         self.act_rotz = self.cont.actuators[ "RotZ" ]
         self.keyActive = Key()
         
@@ -65,14 +62,9 @@ class KeyMotion:
     
     def main( self ):
         
-        up_down = 0
-        right_left = 0
-        jump = 0
-        
-        if 0 < len( self.sen_col.hitObjectList ):
-            up_down = self.keyActive.active( events.SKEY ) - self.keyActive.active( events.WKEY )
-            right_left = self.keyActive.active( events.DKEY ) - self.keyActive.active( events.AKEY )
-            jump = self.keyActive.active( events.SPACEKEY ) * self.jumpHeight
+        up_down = self.keyActive.active( events.SKEY ) - self.keyActive.active( events.WKEY )
+        right_left = self.keyActive.active( events.DKEY ) - self.keyActive.active( events.AKEY )
+        jump = self.keyActive.active( events.SPACEKEY ) * self.jumpHeight
         
         delta = Vector( ( right_left, up_down, jump ) )
         delta *= self.walkSpeed
