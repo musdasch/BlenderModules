@@ -1,4 +1,4 @@
-from bge import events, logic, render, types
+from bge import constraints, events, logic, render, types
 from mathutils import Vector
 
 class MouseLook:
@@ -51,10 +51,13 @@ class KeyMotion:
         
         self.cont = cont
         
+        self.wrapper = constraints.getCharacter( self.cont.owner )
+        
         self.act_rotz = self.cont.actuators[ "RotZ" ]
         self.keyActive = Key()
         
-        self.walkSpeed = 0.1
+        self.walkSpeed = 0.2
+        self.runSpeed = 0.2
         self.jumpHeight = 1
         
         self.cont.activate( self.act_rotz )
@@ -66,10 +69,14 @@ class KeyMotion:
         right_left = self.keyActive.active( events.DKEY ) - self.keyActive.active( events.AKEY )
         jump = self.keyActive.active( events.SPACEKEY ) * self.jumpHeight
         
-        delta = Vector( ( right_left, up_down, jump ) )
-        delta *= self.walkSpeed
+        delta = Vector( ( right_left, up_down, 0 ) )
+        delta *= self.walkSpeed + ( self.keyActive.active( events.LEFTCTRLKEY ) * self.runSpeed )
+        
+        if jump:
+            self.wrapper.jump()
         
         self.act_rotz.dLoc = [ delta.y, delta.x, delta.z ]
+        
 
      
 class Avatar:
