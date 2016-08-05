@@ -6,12 +6,10 @@ class MouseLook:
     def __init__( self, cont ):
         
         self.cont = cont
-        self.sen_mous = self.cont.sensors[ "Mouse" ]
-        self.act_rotx = self.cont.actuators[ "RotX" ]
-        self.act_rotz = self.cont.actuators[ "RotZ" ]
+        self.owner = cont.owner
+        self.cam = self.owner.children[0]
         
-        self.cont.activate( self.act_rotx )
-        self.cont.activate( self.act_rotz )
+        self.sen_mous = self.cont.sensors[ "Mouse" ]
         
         x = render.getWindowWidth()//2
         y = render.getWindowHeight()//2
@@ -29,10 +27,19 @@ class MouseLook:
     def main( self ):
         
         vec_offset = self.getMouseOffset()
-        vec_offset *= -0.005
+        vec_offset *= -0.0005
         
-        self.act_rotx.dRot = [ vec_offset.y, 0, 0 ]
-        self.act_rotz.dRot = [ 0, 0, vec_offset.x ]
+        cam_rotation = self.cam.localOrientation.to_euler()
+        own_rotation = self.owner.worldOrientation.to_euler()
+        
+        if cam_rotation.x + vec_offset.y > 0 and cam_rotation.x + vec_offset.y < 3:
+            cam_rotation.x += vec_offset.y
+            
+        own_rotation.z += vec_offset.x
+        
+        self.cam.localOrientation = cam_rotation
+        self.owner.worldOrientation = own_rotation
+        
         
         render.setMousePosition( * self.screen_center )
 
@@ -50,17 +57,15 @@ class KeyMotion:
     def __init__( self, cont ):
         
         self.cont = cont
+        self.owner = cont.owner
         
         self.wrapper = constraints.getCharacter( self.cont.owner )
         
-        self.act_rotz = self.cont.actuators[ "RotZ" ]
         self.keyActive = Key()
         
-        self.walkSpeed = 0.2
-        self.runSpeed = 0.2
+        self.walkSpeed = 0.3
+        self.runSpeed = 0.3
         self.jumpHeight = 1
-        
-        self.cont.activate( self.act_rotz )
     
     
     def main( self ):
@@ -69,13 +74,14 @@ class KeyMotion:
         right_left = self.keyActive.active( events.DKEY ) - self.keyActive.active( events.AKEY )
         jump = self.keyActive.active( events.SPACEKEY ) * self.jumpHeight
         
-        delta = Vector( ( right_left, up_down, 0 ) )
+        delta = Vector( ( up_down, right_left, 0 ) )
         delta *= self.walkSpeed + ( self.keyActive.active( events.LEFTCTRLKEY ) * self.runSpeed )
         
         if jump:
             self.wrapper.jump()
         
-        self.act_rotz.dLoc = [ delta.y, delta.x, delta.z ]
+        
+        self.owner.applyMovement( delta, True )
         
 
      
